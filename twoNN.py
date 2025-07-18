@@ -6,10 +6,15 @@ import dataset_generator
 def euclidean_distance(a, b):
     return np.sqrt(np.sum((a - b) ** 2))
 
-def two_nn(dataset):
+def two_nn(dataset : np.ndarray, trim : float = 0.05):
+    """
+        twoNN dimension estimation method.
+        :param dataset: The dataset to compute the ID of.
+        :param trim: The percentage of "high distances" discarded. Default at 5%.
+    """
     n_points = dataset.shape[0]
     mu_values = np.zeros(n_points)
-    N = len(dataset)
+    N = int(len(dataset)*(1.0-trim))
 
     for i in range(n_points):
         distances = []
@@ -28,6 +33,7 @@ def two_nn(dataset):
         mu_values[i] = mu
 
     mu_values = mu_values[np.argsort(mu_values)]
+    mu_values = mu_values[:N]
 
     Femp = np.arange(int(N)) / N
 
@@ -37,3 +43,7 @@ def two_nn(dataset):
     d = Ir.coef_[0][0]
 
     return d
+
+
+dataset = dataset_generator.generate_gaussian_dataset(40,20,samples=1000,influence=0.3,noise=0.0)
+print(two_nn(dataset))

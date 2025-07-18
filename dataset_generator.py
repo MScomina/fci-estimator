@@ -9,7 +9,7 @@ def generate_gaussian_dataset(dimension : int, intrinsic : int, samples : int = 
         dataset[k] = np.random.rand(samples)
 
     for k in range(intrinsic, dimension):
-        sample = random.sample(range(intrinsic), random.randint(1,4))
+        sample = random.sample(range(intrinsic), random.randint(1,intrinsic))
         dataset[k] = np.zeros(samples)
         for j in sample:
             dataset[k] += (influence+random.random()*influence/5.0)*dataset[j]
