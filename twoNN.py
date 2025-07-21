@@ -14,7 +14,7 @@ def two_nn(dataset : np.ndarray, trim : float = 0.05):
     """
     n_points = dataset.shape[0]
     mu_values = np.zeros(n_points)
-    N = int(len(dataset)*(1.0-trim))
+    N = int(len(dataset)*(1.0-trim/2))
 
     for i in range(n_points):
         distances = []
@@ -33,17 +33,13 @@ def two_nn(dataset : np.ndarray, trim : float = 0.05):
         mu_values[i] = mu
 
     mu_values = mu_values[np.argsort(mu_values)]
-    mu_values = mu_values[:N]
+    mu_values = mu_values[len(mu_values)-N:N]
 
-    Femp = np.arange(int(N)) / N
+    Femp = np.arange(2*N-len(dataset)) / (2*N-len(dataset))
 
     Ir = LinearRegression(fit_intercept=False)
     Ir.fit(np.log(mu_values).reshape(-1,1), -np.log(1 - Femp).reshape(-1,1))
 
     d = Ir.coef_[0][0]
 
-    return d
-
-
-dataset = dataset_generator.generate_gaussian_dataset(40,20,samples=1000,influence=0.3,noise=0.0)
-print(two_nn(dataset))
+    return d, mu_values

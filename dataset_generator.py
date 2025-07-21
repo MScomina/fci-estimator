@@ -6,14 +6,14 @@ def generate_gaussian_dataset(dimension : int, intrinsic : int, samples : int = 
     dataset = np.empty((dimension, samples))
 
     for k in range(intrinsic):
-        dataset[k] = np.random.rand(samples)
+        dataset[k] = np.random.normal(size=samples)
 
     for k in range(intrinsic, dimension):
         sample = random.sample(range(intrinsic), random.randint(1,intrinsic))
         dataset[k] = np.zeros(samples)
         for j in sample:
             dataset[k] += (influence+random.random()*influence/5.0)*dataset[j]
-        dataset[k] += np.random.normal(scale=noise, size=samples)
+        dataset[k] += noise*np.random.normal(size=samples)
 
     dataset = np.transpose(dataset)
 

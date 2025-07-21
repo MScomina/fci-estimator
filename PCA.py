@@ -14,7 +14,7 @@ def PCA(dataset : np.ndarray, n_components : int | None = None, spectrum_percent
     if n_components is None:
         current_variance = 0
         current_index = 0
-        while current_variance < spectrum_percentage*total_variance:
+        while current_variance <= spectrum_percentage*total_variance:
             current_variance += eigenvalues[-(current_index+1)]
             current_index += 1
         n_components = current_index

@@ -2,6 +2,7 @@ import numpy as np
 from sympy import gamma, Float
 import scipy as scy
 import scipy.optimize as scyopt
+from sklearn.metrics import pairwise_distances
 import dataset_generator
 
 """
@@ -26,10 +27,10 @@ def center_and_normalize(dataset : np.ndarray) -> np.ndarray:
 def FCI(dataset : np.ndarray, samples : int | None = None) -> np.ndarray:
 
     """
-        Computes the FCI of a given dataset.
+        Computes the FCI of a given dataset by exact numeration.
 
         :param dataset: The dataset to compute the FCI of.
-        :param samples: The amount of samples randomly chosen from dataset. If None, FCI will use all samples.
+        :param samples: The amount of samples randomly chosen from dataset. If None, FCI will use all the samples.
     """
     if samples is not None:
         if samples > len(dataset):
@@ -41,9 +42,7 @@ def FCI(dataset : np.ndarray, samples : int | None = None) -> np.ndarray:
     n = samples
     m = int(n*(n-1)/2)
     rs = np.empty(m)
-        
-    diff = dataset[:, np.newaxis, :] - dataset[np.newaxis, :, :]
-    squared_distances = np.sum(diff ** 2, axis=-1)
+    squared_distances = pairwise_distances(dataset, metric="sqeuclidean")
     upper_triangular_indices = np.triu_indices_from(squared_distances, k=1)
     rs = np.sort(np.sqrt(squared_distances[upper_triangular_indices]))
     r = np.empty((m,2))
@@ -64,7 +63,7 @@ def analytical_FCI(x,d,x0=1):
     """
     return 0.5 * (1 + float(Float((gamma((1+d)/2)) / (np.sqrt(np.pi) * gamma(d/2)))) * (-2+(x/x0)**2) * scy.special.hyp2f1(0.5, 1-d/2, 3/2, 1/4 * (-2+(x/x0)**2)**2))
 
-def fit_FCI(rho, samples=500, threshold=0.1):
+def fit_FCI(rho : np.ndarray, samples : None | int = None, threshold : float = 0.1):
     """
         Given an empirical full correlation integral **rho**, it tries to fit it to the analytical_FCI curve.
         To avoid slow-downs, only a random sample of **samples** points is used in the fitting.
@@ -74,6 +73,8 @@ def fit_FCI(rho, samples=500, threshold=0.1):
         :param samples: a positive integer
         :returns: the fitted dimension, the fitted x0 parameter and the mean square error between the fitted curve and the empirical points
     """
+    if samples is None:
+        samples = len(rho)
     samples = min(len(rho),samples)
     data = rho[np.random.choice(len(rho),samples)]
 
@@ -112,7 +113,3 @@ def local_FCI(dataset : np.ndarray, center : int, neighbours : int = 100, radius
         return [0,0,0]
     else:
         return fit_FCI(FCI(dataset))
-
-dataset = dataset_generator.generate_gaussian_dataset(1000,50,samples=1000,influence=0.0, noise=0.0)
-fci = local_FCI(dataset,0,neighbours=20)
-print(fci[0])
